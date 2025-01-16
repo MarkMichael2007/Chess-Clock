@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Clock</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .clock-container {
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            width: 100%;
+            height: 100%;
+        }
+
+        .clock {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10vw;
+            color: white;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .clock:nth-child(1) {
+            background-color: #4CAF50;
+        }
+
+        .clock:nth-child(2) {
+            background-color: #F44336;
+        }
+
+        .clock.paused {
+            opacity: 0.5;
+        }
+
+        .settings {
+            margin-bottom: 20px;
+        }
+
+        .settings input {
+            font-size: 16px;
+            padding: 5px;
+            width: 80px;
+        }
+
+        .settings button {
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="settings">
+        <label for="player1-time">Player 1 Time (minutes):</label>
+        <input type="number" id="player1-time" min="1" value="10">
+        <label for="player2-time">Player 2 Time (minutes):</label>
+        <input type="number" id="player2-time" min="1" value="10">
+        <button onclick="setCustomTime()">Set Time</button>
+    </div>
+    
+    <div class="clock-container">
+        <div id="player1" class="clock" onclick="toggleClock('player1')">10:00</div>
+        <div id="player2" class="clock paused" onclick="toggleClock('player2')">10:00</div>
+    </div>
+
+    <script>
+        let timePlayer1 = 600; // 10 minutes in seconds
+        let timePlayer2 = 600; // 10 minutes in seconds
+        let activePlayer = null; // Tracks the active player
+        let interval;
+    
+        function updateClock(playerId, time) {
+            const minutes = Math.floor(time / 60).toString().padStart(2, '0');
+            const seconds = (time % 60).toString().padStart(2, '0');
+            document.getElementById(playerId).textContent = `${minutes}:${seconds}`;
+        }
+    
+        function toggleClock(playerId) {
+            // Determine the other player's ID
+            const otherPlayer = playerId === 'player1' ? 'player2' : 'player1';
+    
+            // Pause the active player's timer
+            if (activePlayer) {
+                clearInterval(interval);
+                document.getElementById(activePlayer).classList.add('paused');
+            }
+    
+            // Start the other player's timer
+            activePlayer = otherPlayer;
+            document.getElementById(activePlayer).classList.remove('paused');
+            startTimer(activePlayer);
+        }
+    
+        function startTimer(playerId) {
+            interval = setInterval(() => {
+                if (playerId === 'player1') {
+                    timePlayer1--;
+                    if (timePlayer1 < 0) {
+                        clearInterval(interval);
+                        alert('Player 1 ran out of time!');
+                        return;
+                    }
+                    updateClock('player1', timePlayer1);
+                } else {
+                    timePlayer2--;
+                    if (timePlayer2 < 0) {
+                        clearInterval(interval);
+                        alert('Player 2 ran out of time!');
+                        return;
+                    }
+                    updateClock('player2', timePlayer2);
+                }
+            }, 1000);
+        }
+    
+        function setCustomTime() {
+            const player1TimeInput = parseInt(document.getElementById('player1-time').value, 10);
+            const player2TimeInput = parseInt(document.getElementById('player2-time').value, 10);
+    
+            if (isNaN(player1TimeInput) || isNaN(player2TimeInput)) {
+                alert("Please enter valid time values for both players.");
+                return;
+            }
+    
+            // Set the times based on input (in minutes converted to seconds)
+            timePlayer1 = player1TimeInput * 60;
+            timePlayer2 = player2TimeInput * 60;
+    
+            // Reset the clocks and stop any active timer
+            updateClock('player1', timePlayer1);
+            updateClock('player2', timePlayer2);
+    
+            clearInterval(interval);
+            activePlayer = null; // No active player initially
+            document.getElementById('player1').classList.add('paused');
+            document.getElementById('player2').classList.add('paused');
+        }
+    
+        // Initialize the clocks on page load
+        updateClock('player1', timePlayer1);
+        updateClock('player2', timePlayer2);
+    </script>
+        
+</body>
+</html>
